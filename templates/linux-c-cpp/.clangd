@@ -1,0 +1,42 @@
+# Linux userspace C / C++ projeleri için clangd yapılandırması
+# Kopyala:  cp ~/.config/nvim/templates/linux-c-cpp/.clangd /proje/kökün/
+#
+# En iyi sonuç için compile_commands.json bulundurun:
+#   - CMake:  cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build && ln -sf build/compile_commands.json .
+#   - Make:   bear -- make
+#   - Meson:  build dizininde otomatik üretilir (ln -sf build/compile_commands.json .)
+
+CompileFlags:
+  Add:
+    - -Wall
+    - -Wextra
+    # compile_commands.json YOKSA standart belirlemek için (varsa gerekmez):
+    # - -std=c++20      # C++ için
+    # - -std=gnu17      # C için
+
+Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+  ClangTidy:
+    Add:
+      - bugprone-*
+      - performance-*
+      - portability-*
+      - readability-*
+      - clang-analyzer-*
+      - cppcoreguidelines-*
+      - modernize-*
+    Remove:
+      - modernize-use-trailing-return-type
+      - readability-magic-numbers
+      - readability-identifier-length
+      - cppcoreguidelines-avoid-magic-numbers
+      - cppcoreguidelines-pro-bounds-pointer-arithmetic
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+
+Hover:
+  ShowAKA: true

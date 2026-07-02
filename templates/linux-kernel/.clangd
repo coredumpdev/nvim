@@ -1,0 +1,68 @@
+# Linux kernel geliştirme için clangd yapılandırması
+# Kopyala:  cp ~/.config/nvim/templates/linux-kernel/.clangd /kernel/agacinin/koku/
+#
+# ÖN KOŞUL: compile_commands.json üretilmeli (bkz. USAGE.md)
+#   make defconfig && make -j$(nproc)
+#   ./scripts/clang-tools/gen_compile_commands.py
+#
+# Kernel GCC ile derlenir; clangd (clang tabanlı) GCC'ye özgü bazı bayrakları
+# tanımaz. Aşağıdaki "Remove" listesi bu bayrakları temizleyerek clangd'nin
+# hatasız çalışmasını sağlar.
+
+CompileFlags:
+  Compiler: gcc
+  Remove:
+    # GCC'ye özgü, clang'ın bilmediği makine/optimizasyon bayrakları
+    - -mabi=*
+    - -mpreferred-stack-boundary=*
+    - -mindirect-branch*
+    - -mfunction-return*
+    - -mno-fp-ret-in-387
+    - -mskip-rax-setup
+    - -mrecord-mcount
+    - -mfentry
+    - -mstack-protector-guard*
+    - -mharden-sls=*
+    - -mno-avx*
+    - -fconserve-stack
+    - -fno-var-tracking-assignments
+    - -fno-allow-store-data-races
+    - -fno-reorder-blocks-and-partition
+    - -fzero-call-used-regs=*
+    - -femit-struct-debug-baseonly
+    - -fno-partial-inlining
+    - -fmin-function-alignment=*
+    - --param=*
+    # clang'da karşılığı olmayan uyarı bastırmaları
+    - -Wno-alloc-size-larger-than
+    - -Wno-restrict
+    - -Wno-maybe-uninitialized
+    - -Wno-packed-not-aligned
+    - -Wno-format-truncation
+    - -Wno-format-overflow
+    - -Wno-stringop-truncation
+    - -Wno-stringop-overflow
+    - -Wno-dangling-pointer
+    - -Wno-array-bounds
+    - -Wno-unterminated-string-initialization
+  Add:
+    - -Wno-unknown-warning-option
+    - -Wno-unknown-attributes
+    - -Wno-ignored-optimization-argument
+    - -Wno-gnu-variable-sized-type-not-at-end
+
+Diagnostics:
+  # Kernel kodu bilinçli olarak clang-tidy'nin çoğu kuralını ihlal eder;
+  # yalnızca gerçek hata sınıflarını açık tut.
+  UnusedIncludes: None
+  MissingIncludes: None
+  ClangTidy:
+    Remove:
+      - readability-*
+      - modernize-*
+      - llvm-*
+      - altera-*
+      - cppcoreguidelines-*
+
+InlayHints:
+  Enabled: false   # kernel kodunda genelde gürültülü

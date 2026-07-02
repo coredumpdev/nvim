@@ -1,0 +1,35 @@
+# ============================================================================
+#  Neovim yapılandırması — .gitignore
+#  NOT: lazy-lock.json BİLEREK izlenir (eklenti sürümlerini kilitler) -> commit et
+# ============================================================================
+
+# Editör / geçici dosyalar
+*.swp
+*.swo
+*.swn
+*~
+.*.un~
+tags
+# Neovim shada/oturum/spell (yerel duruma özel)
+*.shada
+session.vim
+Session.vim
+spell/
+
+# Yerel, kişiye özel geçersiz kılmalar (izlenmesin)
+lua/config/local.lua
+*.local.lua
+.luarc.json.local
+
+# İşletim sistemi çöpleri
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+
+# Derleme/araç artıkları (yanlışlıkla oluşursa)
+*.o
+*.obj
+*.out
+*.log

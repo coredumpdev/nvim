@@ -1,0 +1,41 @@
+# STM32 / ARM Cortex-M projeleri için clangd örnek yapılandırması
+# Bu dosyayı STM32 proje kökünüze kopyalayın: cp ~/.config/nvim/templates/stm32/.clangd .
+#
+# En iyi sonuç için proje kökünde bir compile_commands.json bulundurun:
+#   - CMake:  cmake -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -B build && ln -sf build/compile_commands.json .
+#   - Make:   bear -- make   (bear kuruluysa)
+#
+# compile_commands.json varsa clangd zaten doğru bayrakları kullanır; aşağıdaki
+# ayarlar ekstra güvence ve embedded'e uygun tanı yapılandırmasıdır.
+
+CompileFlags:
+  # clangd'nin ARM çapraz-derleyicisinin sistem başlıklarını çıkarmasına izin ver
+  Compiler: arm-none-eabi-gcc
+  Add:
+    - --target=arm-none-eabi
+    - -mcpu=cortex-m4          # çipinize göre değiştirin (m0/m0plus/m3/m4/m7...)
+    - -mthumb
+    - -mfloat-abi=hard        # FPU yoksa: soft
+    - -mfpu=fpv4-sp-d16       # M0/M3'te bu satırı kaldırın
+    # Yanlış işlemci/host bayraklarını temizle
+    - -Wno-unknown-attributes
+  Remove:
+    - -mcpu=*                 # compile_commands'tan gelen çakışan bayrakları at yerine tut istersen sil
+    - -march=*
+
+Diagnostics:
+  # Embedded'de yaygın olan bazı gürültülü uyarıları kıs
+  UnusedIncludes: None
+  ClangTidy:
+    Add:
+      - bugprone-*
+      - performance-*
+      - readability-*
+    Remove:
+      - readability-magic-numbers      # register adresleri sürekli uyarı verir
+      - bugprone-easily-swappable-parameters
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
