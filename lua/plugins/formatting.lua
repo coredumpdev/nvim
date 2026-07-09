@@ -31,8 +31,8 @@ return {
     end,
     formatters = {
       clang_format = {
-        -- .clang-format dosyası varsa kullan, yoksa LLVM tarzı
-        prepend_args = { "--fallback-style=LLVM" },
+        -- .clang-format dosyası varsa kullan, yoksa LLVM tabanlı ama girinti 4
+        prepend_args = { "--fallback-style={BasedOnStyle: LLVM, IndentWidth: 4, TabWidth: 4}" },
       },
     },
   },

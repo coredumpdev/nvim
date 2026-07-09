@@ -85,6 +85,8 @@ lua/plugins/
   formatting.lua         -> conform.nvim (kayıtta otomatik format)
   ui.lua                 -> neo-tree, lualine, bufferline, gitsigns, which-key
   editor.lua             -> autopairs, yorumlama, surround, todo-comments
+  multicursor.lua        -> vim-visual-multi (çoklu imleç)
+  terminal.lua           -> toggleterm (kayan/yatay/dikey terminal)
 ```
 
 ## Diller ve araçları
@@ -159,6 +161,33 @@ LSP sunucuları ve formatlayıcılar **Mason** ile kullanıcı dizinine kurulur
 | `<leader>t` | Dosya ağacını aç/kapa (neo-tree) |
 | `]h` / `[h` | Sonraki / önceki git değişikliği |
 | `<leader>hp` | Değişikliği önizle |
+
+### Terminal (toggleterm)
+| Tuş | İşlev |
+|-----|-------|
+| `<C-/>` | Terminali aç/kapat (normal ve terminal modunda) |
+| `<leader>Tf` | Terminal — kayan (float) |
+| `<leader>Th` | Terminal — yatay bölme |
+| `<leader>Tv` | Terminal — dikey bölme |
+| `<Esc><Esc>` | Terminalden normal moda geç |
+
+> Aç-kapa `<C-/>`'dir; `<C-\>` bilerek kullanılmadı — o, terminalden çıkış
+> (`<C-\><C-n>`) için ayrılmıştır. Terminal öneki `<leader>T` (**büyük T**);
+> `<leader>t` (küçük) neo-tree'ye ait olduğundan çakışmayı önler.
+
+### Çoklu imleç (vim-visual-multi)
+| Tuş | İşlev |
+|-----|-------|
+| `<C-n>` | İmleçteki kelimeyi seç; tekrar bas → sonraki eşleşmeyi de ekle |
+| `<leader>A` | Kelimenin **tüm** eşleşmelerini birden seç |
+| `<C-x>` | Mevcut eşleşmeyi atla (VM modunda) |
+| `<C-p>` | Son eklenen imleci kaldır (VM modunda) |
+| `n` / `N` | VM modunda eşleşmeler arası gez |
+| `c` / `i` / `a` | Tüm imleçlerde aynı anda düzenle |
+| `<Esc>` | Çoklu imleçten çık |
+
+> Tetik `<C-n>`'dir; `<C-d>` bilerek kullanılmadı — o, `keymaps.lua`'da
+> "yarım sayfa aşağı" (`<C-d>zz`) olarak ayrılmıştır.
 
 ## C/C++ ve kernel için ipuçları
 
