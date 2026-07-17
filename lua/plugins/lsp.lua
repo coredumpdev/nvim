@@ -99,6 +99,37 @@ return {
         },
       })
 
+      -- qmlls: Qt ile birlikte gelir (Mason'da yok). En yüksek Qt sürümünün
+      -- binary'sini otomatik bul. Build dizinindeki .qmltypes'ları görmesi için
+      -- projede QT_QML_GENERATE_QMLLS_INI ON olmalı (üretilen .qmlls.ini'yi okur).
+      local function find_qmlls()
+        local candidates = vim.fn.glob(vim.fn.expand("~/Qt") .. "/*/gcc_64/bin/qmlls", true, true)
+        -- Sürüm-farkındalıklı sıralama: 6.11.1 > 6.9.3 (leksikografik değil, sayısal)
+        local function ver(path)
+          local s = path:match("/Qt/([%d%.]+)/") or "0"
+          local t = {}
+          for n in s:gmatch("%d+") do
+            t[#t + 1] = tonumber(n)
+          end
+          return t
+        end
+        table.sort(candidates, function(a, b)
+          local va, vb = ver(a), ver(b)
+          for i = 1, math.max(#va, #vb) do
+            local x, y = va[i] or 0, vb[i] or 0
+            if x ~= y then
+              return x < y
+            end
+          end
+          return false
+        end)
+        return candidates[#candidates] or "qmlls"
+      end
+
+      vim.lsp.config("qmlls", {
+        cmd = { find_qmlls() },
+      })
+
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
@@ -113,7 +144,7 @@ return {
       -- ------------------------------------------------------------------
       -- Sunucuları etkinleştir (nvim-lspconfig'in taşıdığı tanımları kullanır)
       -- ------------------------------------------------------------------
-      vim.lsp.enable({ "clangd", "gopls", "omnisharp", "neocmake", "lua_ls" })
+      vim.lsp.enable({ "clangd", "gopls", "omnisharp", "neocmake", "lua_ls", "qmlls" })
 
       -- ------------------------------------------------------------------
       -- LSP bir tampona bağlandığında geçerli olan tuş atamaları

@@ -31,8 +31,11 @@ return {
     end,
     formatters = {
       clang_format = {
-        -- .clang-format dosyası varsa kullan, yoksa LLVM tabanlı ama girinti 4
-        prepend_args = { "--fallback-style={BasedOnStyle: LLVM, IndentWidth: 4, TabWidth: 4}" },
+        -- .clang-format dosyası varsa onu kullanır (öncelikli).
+        -- Not: --fallback-style SADECE hazır stil ismi kabul eder (LLVM/Google/none...),
+        -- inline {...} sözlüğü DEĞİL — inline dict sadece --style için geçerlidir.
+        -- Fallback girintiyi 4 yapmak istersen ~/.clang-format dosyası oluştur.
+        prepend_args = { "--fallback-style=LLVM" },
       },
     },
   },
