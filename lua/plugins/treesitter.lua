@@ -17,7 +17,9 @@ return {
       },
       auto_install = true,
       highlight = { enable = true, additional_vim_regex_highlighting = false },
-      indent = { enable = true },
+      -- C/C++ için treesitter indent kapalı: parantezleri yanlış girintiliyor.
+      -- Bu diller için yerleşik cindent kullanılıyor (options.lua'daki autocmd).
+      indent = { enable = true, disable = { "c", "cpp" } },
       incremental_selection = {
         enable = true,
         keymaps = {

@@ -104,6 +104,10 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.bo.softtabstop = 4
 		vim.bo.shiftwidth = 4
 		vim.bo.expandtab = true
+		-- Treesitter indent bu diller için kapalı; yerleşik cindent parantezleri
+		-- doğru hizalar. smartindent'i bu buffer'da devre dışı bırakıp çakışmayı önle.
+		vim.bo.cindent = true
+		vim.bo.smartindent = false
 	end,
 })
 
