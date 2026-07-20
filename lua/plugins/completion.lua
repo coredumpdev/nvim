@@ -11,6 +11,24 @@ return {
       dependencies = { "rafamadriz/friendly-snippets" },
       config = function()
         require("luasnip.loaders.from_vscode").lazy_load()
+
+        -- Asılı kalan snippet oturumunu temizle.
+        -- Aksi halde bir snippet açıp tab-stop'ları gezmeden insert'ten
+        -- çıkınca, sonraki insert'e geçişte imleç eski snippet'e "zıplar"
+        -- (yani saçma yerlere gider). LuaSnip README'deki önerilen düzeltme.
+        vim.api.nvim_create_autocmd("ModeChanged", {
+          group = vim.api.nvim_create_augroup("UserLuaSnipUnlink", { clear = true }),
+          pattern = { "s:n", "i:*" },
+          callback = function()
+            local ls = require("luasnip")
+            if
+              ls.session.current_nodes[vim.api.nvim_get_current_buf()]
+              and not ls.session.jump_active
+            then
+              ls.unlink_current()
+            end
+          end,
+        })
       end,
     },
   },
