@@ -45,6 +45,11 @@ return {
     },
     appearance = { nerd_font_variant = "mono" },
     completion = {
+      -- Menü ilk öğeyi OTOMATİK SEÇMESİN. Aksi halde <CR> yeni satır yerine
+      -- seçili tamamlamayı kabul eder (ör. "{" sonrası Enter'da girintili blok
+      -- oluşmaz). Böylece <CR> sadece sen açıkça öğe seçtiğinde kabul eder;
+      -- aksi halde autopairs'a düşer (girintili blok). Seçim: <Tab>/<C-j>/<C-k>.
+      list = { selection = { preselect = false, auto_insert = false } },
       documentation = { auto_show = true, auto_show_delay_ms = 200 },
       menu = { border = "rounded" },
       ghost_text = { enabled = true },

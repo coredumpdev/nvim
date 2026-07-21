@@ -21,6 +21,19 @@ return {
       cs = { "csharpier" },
       go = { "goimports", "gofumpt" },
       lua = { "stylua" },
+      python = { "ruff_organize_imports", "ruff_format" }, -- ruff: isort + black eşdeğeri
+      -- JavaScript / TypeScript ve web dosyaları: prettierd
+      javascript = { "prettierd" },
+      javascriptreact = { "prettierd" },
+      typescript = { "prettierd" },
+      typescriptreact = { "prettierd" },
+      json = { "prettierd" },
+      jsonc = { "prettierd" },
+      css = { "prettierd" },
+      scss = { "prettierd" },
+      html = { "prettierd" },
+      yaml = { "prettierd" },
+      markdown = { "prettierd" },
       -- cmake: neocmake LSP formatlaması (lsp_format fallback) kullanılır
     },
     -- Kayıtta otomatik formatla (LSP formatına geri dönüş yapılır)

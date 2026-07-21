@@ -1,6 +1,6 @@
 -- ============================================================================
 --  LSP: Mason (araç kurulumu) + nvim-lspconfig + nvim 0.11 yerel LSP API'si
---  Diller: C, C++, C# (sistem prog. dahil), Go, CMake, Lua
+--  Diller: C, C++, C# (sistem prog. dahil), Go, CMake, Lua, Python, JS/TS
 -- ============================================================================
 return {
 	{
@@ -24,12 +24,20 @@ return {
 					-- "omnisharp",       -- C# (.NET)
 					"neocmake", -- CMake  (neocmakelsp)
 					"lua-language-server",
+					"basedpyright", -- Python (tip denetimi + tamamlama)
+					"ruff", -- Python (linter + formatlayıcı, LSP olarak)
+					"vtsls", -- JavaScript / TypeScript (tsserver sarmalayıcı)
+					"eslint-lsp", -- JS/TS linting (eslint, proje config'i varsa)
+					"marksman", -- Markdown (başlık/link nav, tamamlama, refactor)
 					-- Formatlayıcılar / araçlar
 					"clang-format", -- C / C++
 					"gofumpt", -- Go (katı gofmt)
 					"goimports", -- Go import düzenleme
 					-- "csharpier",       -- C#
 					"stylua", -- Lua
+					"prettierd", -- JS/TS/JSON/CSS/HTML formatlayıcı (daemon, hızlı)
+					"debugpy", -- Python hata ayıklayıcı (nvim-dap-python kullanır)
+					"js-debug-adapter", -- Node.js / JS-TS hata ayıklayıcı (nvim-dap)
 				},
 				run_on_start = true,
 			})
@@ -142,9 +150,77 @@ return {
 			})
 
 			-- ------------------------------------------------------------------
+			-- Python: basedpyright (tip denetimi, tamamlama, inlay hints) + ruff
+			-- (lint/format). İş bölümü: ruff linting yapar, basedpyright'ın kendi
+			-- linter'ıyla çakışmaması için ruff'ın hover'ı kapatılır.
+			-- Aktif interpreter (conda ortamı) venv-selector ile seçilir.
+			-- ------------------------------------------------------------------
+			vim.lsp.config("basedpyright", {
+				settings = {
+					basedpyright = {
+						-- Import düzenleme + linting ruff'a bırakılıyor
+						disableOrganizeImports = true,
+						analysis = {
+							-- "recommended" çok katı/gürültülü; genel kullanım için "standard"
+							typeCheckingMode = "standard",
+							autoSearchPaths = true,
+							useLibraryCodeForTypes = true,
+							diagnosticMode = "openFilesOnly", -- sadece açık dosyaları tara (hız)
+							inlayHints = {
+								variableTypes = true,
+								callArgumentNames = true,
+								functionReturnTypes = true,
+								genericTypes = false,
+							},
+						},
+					},
+				},
+			})
+
+			vim.lsp.config("ruff", {
+				-- basedpyright ile hover çakışmasın (tanılama/format ruff'ta kalır)
+				on_attach = function(client)
+					client.server_capabilities.hoverProvider = false
+				end,
+			})
+
+			-- ------------------------------------------------------------------
+			-- JavaScript / TypeScript: vtsls (tsserver) + eslint (linting).
+			-- Formatlama prettierd'ye (conform) bırakılır; inlay hints açık.
+			-- ------------------------------------------------------------------
+			local ts_inlay = {
+				parameterNames = { enabled = "literals" },
+				parameterTypes = { enabled = true },
+				variableTypes = { enabled = true },
+				propertyDeclarationTypes = { enabled = true },
+				functionLikeReturnTypes = { enabled = true },
+				enumMemberValues = { enabled = true },
+			}
+			vim.lsp.config("vtsls", {
+				settings = {
+					typescript = { inlayHints = ts_inlay },
+					javascript = { inlayHints = ts_inlay },
+					vtsls = { experimental = { completion = { enableServerSideFuzzyMatch = true } } },
+				},
+			})
+
+			-- eslint: dosya kaydında otomatik --fix (proje eslint config'i varsa çalışır)
+			vim.lsp.config("eslint", {
+				on_attach = function(_, buf)
+					vim.api.nvim_create_autocmd("BufWritePre", {
+						buffer = buf,
+						command = "silent! EslintFixAll",
+					})
+				end,
+			})
+
+			-- ------------------------------------------------------------------
 			-- Sunucuları etkinleştir (nvim-lspconfig'in taşıdığı tanımları kullanır)
 			-- ------------------------------------------------------------------
-			vim.lsp.enable({ "clangd", "gopls", "omnisharp", "neocmake", "lua_ls", "qmlls" })
+			vim.lsp.enable({
+				"clangd", "gopls", "omnisharp", "neocmake", "lua_ls", "qmlls",
+				"basedpyright", "ruff", "vtsls", "eslint", "marksman",
+			})
 
 			-- ------------------------------------------------------------------
 			-- LSP bir tampona bağlandığında geçerli olan tuş atamaları

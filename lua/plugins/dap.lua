@@ -1,6 +1,6 @@
 -- ============================================================================
 --  Hata ayıklama (Debug): nvim-dap + dap-ui
---  STM32 / ARM Cortex-M için OpenOCD (gdbserver) + gdb-multiarch üzerinden
+--  C/C++: STM32 (OpenOCD) + native gdb · Node.js/JS/TS: js-debug-adapter
 --
 --  Kullanım:
 --    1) Projeyi derle (build/<proje>.elf üretilsin)
@@ -133,6 +133,52 @@ return {
       -- <F5> basınca bu listeden seçim menüsü çıkar
       dap.configurations.c = { native_launch, native_attach, stm32 }
       dap.configurations.cpp = { native_launch, native_attach, stm32 }
+
+      -- ------------------------------------------------------------------
+      -- Node.js / JavaScript / TypeScript (Mason: js-debug-adapter)
+      -- pwa-node: vscode-js-debug'un DAP sunucusu. TS dosyalarını doğrudan
+      -- çalıştırmak için projede "tsx" ya da "ts-node" gerekir (aşağıda tsx ile).
+      -- ------------------------------------------------------------------
+      dap.adapters["pwa-node"] = {
+        type = "server",
+        host = "localhost",
+        port = "${port}",
+        executable = {
+          command = "node",
+          args = { mason .. "/packages/js-debug-adapter/js-debug/src/dapDebugServer.js", "${port}" },
+        },
+      }
+
+      local js_config = {
+        {
+          type = "pwa-node",
+          request = "launch",
+          name = "Node: bu dosyayı çalıştır",
+          program = "${file}",
+          cwd = "${workspaceFolder}",
+          sourceMaps = true,
+        },
+        {
+          type = "pwa-node",
+          request = "launch",
+          name = "TS: bu dosyayı çalıştır (tsx)",
+          runtimeExecutable = "tsx", -- npm i -g tsx  (ya da proje devDependency)
+          program = "${file}",
+          cwd = "${workspaceFolder}",
+          sourceMaps = true,
+        },
+        {
+          type = "pwa-node",
+          request = "attach",
+          name = "Node: çalışan sürece bağlan",
+          processId = require("dap.utils").pick_process,
+          cwd = "${workspaceFolder}",
+          sourceMaps = true,
+        },
+      }
+      for _, lang in ipairs({ "javascript", "typescript", "javascriptreact", "typescriptreact" }) do
+        dap.configurations[lang] = js_config
+      end
 
       -- ------------------------------------------------------------------
       -- OpenOCD'yi Neovim içinden başlat/durdur

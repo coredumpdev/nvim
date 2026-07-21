@@ -1,7 +1,8 @@
 # Neovim Yapılandırması
 
-C / C++ / sistem programlama / Linux kernel / C# / Go geliştirme için
-Catppuccin temalı, LSP tabanlı bir Neovim kurulumu.
+C / C++ / sistem programlama / Linux kernel / C# / Go / Python / JavaScript /
+TypeScript / Markdown geliştirme için Catppuccin temalı, LSP tabanlı bir Neovim
+kurulumu.
 
 ## Ön koşullar (config'i kurmadan ÖNCE)
 
@@ -38,10 +39,34 @@ sudo apt install -y golang-go
 
 # C# (.NET)     -> omnisharp + csharpier
 sudo apt install -y dotnet-sdk-10.0     # veya Microsoft paket deposundan
-
-# Mason araçlarının bir kısmı için
-sudo apt install -y python3 python3-pip nodejs npm
 ```
+
+#### Python  (env yöneticisi: conda)
+Python araçları (basedpyright/ruff/debugpy) Mason ile gelir; **çalışacakları
+Python yorumlayıcısı conda ile yönetilir.**
+```bash
+# Miniconda kur (yoksa):  https://docs.conda.io/en/latest/miniconda.html
+# Ortam oluştur/aktive et, debug için debugpy ekle:
+conda create -n proje python=3.12 -y
+conda activate proje
+conda install debugpy -y          # nvim içinde debug yapacaksan
+```
+> Neovim'de `<leader>vs` (`:VenvSelect`) ile conda ortamını seç; LSP + debug
+> otomatik o ortamın Python'una bağlanır. `fd` gerekir (Arch: `pacman -S fd`).
+
+#### JavaScript / TypeScript  (Node yöneticisi: nvm)
+JS/TS araçları (vtsls/eslint/prettierd/js-debug-adapter) **Node.js gerektirir**;
+Node, nvm ile kurulur (Mason bu araçları npm ile indirir).
+```bash
+# nvm kur (yoksa):
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
+# Yeni terminal aç, sonra:
+nvm install --lts        # Node LTS
+nvm alias default 'lts/*'
+npm i -g tsx             # (ops.) .ts dosyalarını doğrudan debug etmek için
+```
+> **Önemli:** nvim'i, nvm'in yüklü olduğu (yani `node` PATH'te olan) bir
+> terminalden aç; aksi halde Mason JS/TS araçlarını kuramaz/çalıştıramaz.
 
 ### 3) STM32 / ARM Cortex-M (gömülü geliştirme)
 ```bash
@@ -62,8 +87,14 @@ sudo apt install -y \
 ### Mason'ın OTOMATİK kurduğu (apt ile uğraşmayın)
 İlk `nvim` açılışında Mason şunları indirir:
 `clangd`, `gopls`, `omnisharp`, `neocmakelsp`, `lua-language-server`,
-`clang-format`, `gofumpt`, `goimports`, `csharpier`, `stylua`, `cpptools`.
+`basedpyright`, `ruff`, `vtsls`, `eslint-lsp`, `marksman`,
+`clang-format`, `gofumpt`, `goimports`, `csharpier`, `stylua`, `prettierd`,
+`cpptools`, `debugpy`, `js-debug-adapter`.
 Durumu `:Mason` ve `:checkhealth` ile görebilirsiniz.
+
+> Python/JS-TS Mason araçları için sırasıyla **conda (Python)** ve **Node/nvm**
+> önce kurulu olmalı (yukarıya bakın). Aksi halde `basedpyright`, `ruff`,
+> `vtsls`, `eslint`, `prettierd` kurulamaz/çalışmaz.
 
 > Not: `arm-none-eabi-gcc`, `gdb-multiarch`, `dotnet`, `go` gibi **çalıştırılabilir
 > araçlar apt/sistemden gelir**; Mason yalnızca LSP/format araçlarını yönetir.
@@ -87,6 +118,9 @@ lua/plugins/
   editor.lua             -> autopairs, yorumlama, surround, todo-comments
   multicursor.lua        -> vim-visual-multi (çoklu imleç)
   terminal.lua           -> toggleterm (kayan/yatay/dikey terminal)
+  dap.lua                -> hata ayıklama (C/STM32 + Node.js/JS-TS)
+  python.lua             -> conda ortam seçici (venv-selector) + debugpy
+  markdown.lua           -> editör içi canlı render (render-markdown.nvim)
 ```
 
 ## Diller ve araçları
@@ -100,10 +134,32 @@ lua/plugins/
 | CMake              | neocmake     | (LSP formatı)       |
 | Make               | (treesitter) | —                   |
 | Lua                | lua_ls       | stylua              |
+| Python             | basedpyright + ruff | ruff (format + import) |
+| JavaScript / TS    | vtsls + eslint | prettierd         |
+| Markdown           | marksman     | prettierd           |
 
 LSP sunucuları ve formatlayıcılar **Mason** ile kullanıcı dizinine kurulur
 (`:Mason` ile yönetilir). Go derleyicisi `~/.local/go`, PATH ve `GOPATH`
 `~/.bashrc` içine eklenmiştir.
+
+- **Python**: ortam yöneticisi **conda**; `<leader>vs` ile ortam seçilir
+  (venv-selector). Debug: `debugpy` (nvim-dap-python) — seçilen conda ortamında
+  `debugpy` kurulu olmalı. `ruff` linting yapar, `basedpyright` tip denetimi;
+  import düzenleme ruff'a bırakılır.
+- **JS/TS**: Node **nvm** ile yönetilir. `vtsls` LSP, `eslint` kayıtta otomatik
+  `--fix` (proje eslint config'i varsa), `prettierd` formatlar. Debug:
+  `js-debug-adapter` (`<F5>` → Node/TS-tsx/attach seçenekleri).
+- **Markdown**: `marksman` LSP (başlık/link navigasyonu, tamamlama), `prettierd`
+  formatlar, `render-markdown.nvim` editör içi canlı render eder (`<leader>mr`
+  aç/kapa; imleçteki satır ham gösterilir). Kod blokları treesitter ile ilgili
+  dilde renklenir (```python, ```js …).
+
+> **Not (Neovim 0.12+):** nvim-treesitter master, 0.12'de directive handler'lara
+> gelen `match[id]`'in artık node LİSTESİ olmasıyla uyumsuz; markdown'da dil
+> belirtilen kod bloğu açınca `attempt to call method 'range' (a nil value)`
+> hatası verir. `treesitter.lua` sonundaki `set-lang-from-info-string!` /
+> `downcase!` directive override'ları bunu düzeltir (yukarı akış düzelince
+> kaldırılabilir).
 
 ## Önemli tuşlar  (Leader = `<Space>`)
 
@@ -154,6 +210,18 @@ LSP sunucuları ve formatlayıcılar **Mason** ile kullanıcı dizinine kurulur
 | `<leader>f` | Kodu formatla |
 | `<leader>ih` | Inlay hints aç/kapa |
 | `[d` / `]d` | Önceki / sonraki tanı (diagnostic) |
+
+### Python / JavaScript / TypeScript'e özel
+| Tuş | İşlev |
+|-----|-------|
+| `<leader>vs` | Python ortamı (conda/venv) seç — LSP + debug'a uygular |
+| `<F5>` | Debug başlat (Python: dosya · JS/TS: Node / TS-tsx / attach) |
+| `<leader>dn` / `<leader>df` | Python: test metodu / test sınıfı debug |
+| `<leader>db` | Breakpoint aç/kapa (tüm diller) |
+| `<leader>mr` | Markdown: editör içi render aç/kapa |
+
+> **Not (JS/TS tamamlama):** `<CR>` yalnızca menüden **açıkça** öğe seçince
+> (`<Tab>`/`<C-j>`/`<C-k>`) kabul eder; aksi halde normal yeni satır oluşturur.
 
 ### Dosya ağacı / Git
 | Tuş | İşlev |
